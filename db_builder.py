@@ -24,7 +24,7 @@ def insert_students():
     print studentsList
 
     # Connect to mongo server and insert collection
-    # Use localhost for testng (default), and forn now for sumission?
+    # Use localhost for testng (default), and for now for sumission?
     client = MongoClient()
     db = client["TheRussianSpy"]
     result = db.students.insert_many(studentsList)
