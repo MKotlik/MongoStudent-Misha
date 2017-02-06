@@ -24,11 +24,11 @@ def insert_students():
     print studentsList
 
     # Connect to mongo server and insert collection
-    client = MongoClient()  # By default connects to localhost
+    # Use localhost for testng (default), lisa for submission?
+    client = MongoClient("lisa.stuy.edu")
     db = client["TheRussianSpy"]
     result = db.students.insert_many(studentsList)
     client.close()
-    
 
 
 def createStudentsDict():
