@@ -1,70 +1,53 @@
-#db1 SQLite assignment
-#Team: The Rainbow Keys
-#Quinn Dibble, Misha Kotlik
-#SoftDev, Pd. 9
+# mongo1 assignment
+# Team: The Russian Spy
+# Misha Kotlik
+# SoftDev, Pd. 6
 
-import sqlite3   #enable control of an sqlite database
-import csv       #facilitates CSV I/O
+from pymongo import MongoClient
+import csv  # facilitates CSV I/O
 
-#Main program function
+
 def main():
-	#Create & fill students table
-	enter_students("data/peeps.csv")
-	
-	#Create & fill courses table
-	enter_courses("data/courses.csv")
-		
-def enter_students(filename):
-	#Open csv file for reading
-	csvFile = open(filename)
-	csvDict = csv.DictReader(csvFile)
-	
-	#Prepare databse for entry
-	f="discobandit.db" #db filename
-	db = sqlite3.connect(f) #open if f exists, otherwise create
-	cur = db.cursor() #facilitate db ops
-	
-	#Create students table
-	query = "CREATE TABLE students (name TEXT, age INTEGER, id INTEGER)"
-	cur.execute(query)
-	
-	#Enter student data into table from csvDict
-	for entry in csvDict:
-		query = "INSERT INTO students VALUES (?,?,?)"
-		#? marks are replaced by corresponding tuple values
-		#Helps safeguard against SQL injections?
-		values = (entry['name'], entry['age'], entry['id'])
-		cur.execute(query, values)
-	
-	#Commit & close resources
-	db.commit()
-	db.close()
-	csvFile.close()
-	
+    insert_students()
 
-def enter_courses(filename):
-	#Open csv file for reading
-	csvFile = open(filename)
-	csvDict = csv.DictReader(csvFile)
 
-	#Prepare database for entry
-	f = "discobandit.db" #db filename
-	db = sqlite3.connect(f) #open if f exists, otherwise create
-	cur = db.cursor() #facilitate db ops
+def insert_students():
+    # Read students CSV file into a dict of student-dicts
+    studentsDict = createStudentsDict()
 
-	#Create classes table
-	query = "CREATE TABLE classes (code TEXT, mark INTEGER, id INTEGER)"
-	cur.execute(query)
+    # Read coruses CSV file to append courses to respective student dicts
+    appendCourses(studentsDict)
 
-	#enter class data into the table from csvDict
-	for entry in csvDict:
-		query = "INSERT INTO classes VALUES (?,?,?)"
-		values = (entry['code'], entry['mark'], entry['id'])
-		cur.execute(query, values)
+    # Convert studentsDict into list of studentsDict
+    studentsList = studentsDict.values()
 
-	#Commit and close resources
-	db.commit()
-	db.close()
-	csvFile.close()
+    print studentsList
+
+    # Connect to mongo server and insert collection
+    client = MongoClient()  # By default connects to localhost
+    db = client["TheRussianSpy"]
+    result = db.students.insert_many(studentsList)
+    client.close()
+    
+
+
+def createStudentsDict():
+    with open("data/peeps.csv", 'r') as csvFile:
+        csvInfo = csv.DictReader(csvFile)
+        studentsDict = {}
+        for entry in csvInfo:
+            sDict = entry
+            sDict["courses"] = []
+            studentsDict[sDict["id"]] = sDict
+        return studentsDict
+
+
+def appendCourses(studentsDict):
+    with open("data/courses.csv", 'r') as csvFile:
+        csvInfo = csv.DictReader(csvFile)
+        for entry in csvInfo:
+            courseDict = {"code": entry["code"], "mark": entry["mark"]}
+            studentsDict[entry["id"]]["courses"].append(courseDict)
+        # No need to return, should be mutated by reference
 
 main()
