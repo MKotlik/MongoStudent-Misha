@@ -18,10 +18,10 @@ def print_averages():
     for student in cursor:
         gradeSum = 0
         for course in student["courses"]:
-            gradeSum += course["mark"]
+            gradeSum += int(course["mark"])
         average = gradeSum / len(student["courses"])
         studStr = "Name: " + student["name"] + " | ID: " + student["id"]
-        studStr += " | Average " + average
+        studStr += " | Average: " + str(average)
         print studStr
     client.close()
 
