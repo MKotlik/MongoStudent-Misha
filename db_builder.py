@@ -50,4 +50,5 @@ def appendCourses(studentsDict):
             studentsDict[entry["id"]]["courses"].append(courseDict)
         # No need to return, should be mutated by reference
 
+
 main()
